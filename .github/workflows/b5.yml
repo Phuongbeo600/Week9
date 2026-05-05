@@ -2,9 +2,11 @@ name: Bai 5 - JaCoCo Quality Gate
 
 on:
   push:
+    branches: [ "main" ]
     paths:
-      - 'b5/**' # 1. CHỈ KÍCH HOẠT khi có thay đổi code ở trong thư mục b5
+      - 'b5/**' # Chỉ chạy khi bạn sửa code bài 5
   pull_request:
+    branches: [ "main" ]
     paths:
       - 'b5/**'
 
@@ -23,14 +25,17 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
+    # Bước 1: Chạy test và check rule 80% trong pha verify
     - name: Run Maven Verify
       run: mvn clean verify
-      working-directory: ./b5 # 2. RA LỆNH CHO BOT CHUI VÀO b5 RỒI MỚI CHẠY MAVEN
+      working-directory: ./b5 # Chui vào b5 để chạy
 
-    - name: Archive JaCoCo Report
+    # Bước 2: Đề bài yêu cầu - Trích xuất và lưu trữ báo cáo
+    - name: Upload JaCoCo Coverage Report
       uses: actions/upload-artifact@v4
-      if: always()
+      if: always() # Phải có cái này để kể cả khi build FAIL (dưới 80%) nó vẫn lưu report cho bạn xem
       with:
-        name: jacoco-coverage-report-b5
+        name: jacoco-report-b5
+        # Lưu ý đường dẫn: Phải đi từ gốc vào b5 mới thấy thư mục target
         path: b5/target/site/jacoco/
         retention-days: 5
