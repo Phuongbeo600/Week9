@@ -1,6 +1,7 @@
 package org.example;
 
 public class MathUtils {
+    int So_Nguyen_Sai_Chuan = 100;
     public int add(int a, int b) {
         return a + b;
     }
