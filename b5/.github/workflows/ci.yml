@@ -1,17 +1,27 @@
-name: Java CI Build & Test
+name: Bai 5 - JaCoCo Coverage
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main" ]
+    # 1. Chỉ kích hoạt workflow này nếu có thay đổi trong thư mục b5
+    paths:
+      - 'b5/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'b5/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    # 2. Bắt buộc mọi lệnh 'run' ở dưới phải chui vào thư mục b5 để chạy
+    defaults:
+      run:
+        working-directory: ./b5
+
     steps:
-      - name: Checkout Source Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -21,15 +31,15 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # Bước quan trọng: Chạy test và verify coverage
-      - name: Run Tests and Check Coverage
+      # Lệnh này bây giờ sẽ thực thi bên trong thư mục ./b5
+      - name: Run test and verify coverage
         run: mvn clean verify
 
-      # Trích xuất và lưu trữ báo cáo JaCoCo
+      # 3. Phải cập nhật lại đường dẫn lấy file report cho đúng
       - name: Upload JaCoCo Coverage Report
         uses: actions/upload-artifact@v4
-        if: always() # Đảm bảo step này luôn chạy kể cả khi build fail (do không đủ 80%)
+        if: always()
         with:
-          name: jacoco-html-report
-          path: target/site/jacoco/
-          retention-days: 7 # Giữ file report trong 7 ngày
+          name: jacoco-report-b5
+          path: b5/target/site/jacoco/ # Cập nhật đường dẫn có chứa thư mục b5
+          retention-days: 7
