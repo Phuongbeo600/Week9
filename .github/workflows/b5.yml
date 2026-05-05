@@ -1,0 +1,36 @@
+name: Bai 5 - JaCoCo Quality Gate
+
+on:
+  push:
+    paths:
+      - 'b5/**' # 1. CHỈ KÍCH HOẠT khi có thay đổi code ở trong thư mục b5
+  pull_request:
+    paths:
+      - 'b5/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Run Maven Verify
+      run: mvn clean verify
+      working-directory: ./b5 # 2. RA LỆNH CHO BOT CHUI VÀO b5 RỒI MỚI CHẠY MAVEN
+
+    - name: Archive JaCoCo Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: jacoco-coverage-report-b5
+        path: b5/target/site/jacoco/
+        retention-days: 5
