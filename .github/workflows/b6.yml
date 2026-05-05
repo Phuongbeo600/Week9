@@ -1,0 +1,57 @@
+name: Bai 6 - JaCoCo Quality Gate
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'b6/**' # Chỉ chạy khi bạn sửa code bài 5
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'b6/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+     
+     # Bước A: Chạy Checkstyle qua Maven
+    - name: Run Checkstyle
+      run: mvn checkstyle:check
+      working-directory: ./b6
+
+    # Bước B: Tự động đăng bình luận vào dòng code sai trong PR
+    - name: Checkstyle Inline Feedback
+      uses: dbelyaev/action-checkstyle@master
+      if: failure() # Chỉ chạy nếu bước Checkstyle ở trên phát hiện có lỗi
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        level: warning
+        
+    # Bước 1: Chạy test và check rule 80% trong pha verify
+    - name: Run Maven Verify
+      run: mvn clean verify
+      working-directory: ./b6 # Chui vào b5 để chạy
+
+    # Bước 2: Đề bài yêu cầu - Trích xuất và lưu trữ báo cáo
+    - name: Upload JaCoCo Coverage Report
+      uses: actions/upload-artifact@v4
+      if: always() # Phải có cái này để kể cả khi build FAIL (dưới 80%) nó vẫn lưu report cho bạn xem
+      with:
+        name: jacoco-report-b6
+        # Lưu ý đường dẫn: Phải đi từ gốc vào b5 mới thấy thư mục target
+        path: b6/target/site/jacoco/
+        retention-days: 5
